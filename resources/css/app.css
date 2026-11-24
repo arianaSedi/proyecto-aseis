@@ -8,4 +8,39 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Paleta ASEIS: petróleo, azul noche, mostaza y gris azulado */
+    --color-petroleo-50: #e8f2f5;
+    --color-petroleo-100: #cfe4ea;
+    --color-petroleo-500: #1f6f84;
+    --color-petroleo-600: #155d70;
+    --color-petroleo-700: #0e4c5e;
+    --color-petroleo-800: #0a3d4c;
+
+    --color-noche-700: #383d61;
+    --color-noche-800: #2c3050;
+    --color-noche-900: #242842;
+
+    --color-mostaza-100: #fdf1dc;
+    --color-mostaza-300: #f7cf8c;
+    --color-mostaza-400: #f2b65a;
+    --color-mostaza-500: #e9a23c;
+
+    --color-fondo-100: #eef2f5;
+    --color-fondo-200: #dfe5eb;
+    --color-fondo-300: #cdd5dd;
+
+    --color-lavanda-100: #eee9f6;
+    --color-lavanda-600: #5e4c8f;
+}
+
+
+/* Permite desplazarse sin mostrar la barra de scroll */
+@utility sin-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }

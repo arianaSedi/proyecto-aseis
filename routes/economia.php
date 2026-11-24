@@ -11,4 +11,5 @@ Route::prefix('economia')->name('economia.')->group(function () {
     Route::post('/matematica/calcular', [MatematicaFinancieraController::class, 'calcular'])
         ->name('matematica.calcular');
 
+
 });
