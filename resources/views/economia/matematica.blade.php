@@ -128,9 +128,9 @@
             @isset($resultado)
                 <div class="rounded-2xl bg-white p-6 shadow">
                     <p class="text-sm uppercase tracking-wide text-slate-500">{{ $concepto }}</p>
-                    <p class="mt-2 text-4xl font-bold text-slate-900">
+                    <p class="mt-2 text-4xl font-bold text-noche-900">
                         @if ($unidad == '%')
-                            {{ number_format($resultado, 4) }} %
+                            {{ number_formatrounded-xl bg-fondo-100 p-4($resultado, 4) }} %
                         @else
                             ${{ number_format($resultado, 2) }}
                         @endif
@@ -211,7 +211,7 @@
                 </div>
             @else
                 <div class="flex h-full min-h-48 items-center justify-center rounded-2xl border-2 border-dashed border-fondo-300 p-6 text-center text-slate-500">
-                    Elige una operación, escribe los datos y presiona <strong class="mx-1">Calcular</strong> para ver el resultado.
+                                        <p>Elige una operación, escribe los datos y presiona <strong>Calcular</strong> para ver el resultado.</p>
                 </div>
             @endisset
         </div>

@@ -7,4 +7,3 @@ Route::get('/', function () {
 })->name('inicio');
 
 require __DIR__.'/economia.php';
-require __DIR__.'/maquetas.php';

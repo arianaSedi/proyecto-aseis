@@ -44,7 +44,7 @@
         @foreach ($supuestos as [$etiqueta, $valor])
             <div class="rounded-2xl bg-white p-5 shadow">
                 <p class="text-xs uppercase tracking-wide text-slate-500">{{ $etiqueta }}</p>
-                <p class="mt-1 text-xl font-semibold">{{ $valor }}</p>
+                <x-insignia color="ambar" class="mt-2">Supuesto académico · Bloque A</x-insignia>
             </div>
         @endforeach
     </div>

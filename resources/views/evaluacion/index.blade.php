@@ -155,5 +155,7 @@
                 <a href="{{ $url('alternativas.index') }}" class="text-blue-600 hover:underline">Alternativas</a>.
             </p>
         </x-tarjeta>
+        
+        @include('evaluacion._memoria')
     @endif
 @endsection
