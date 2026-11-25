@@ -7,6 +7,7 @@ use App\Http\Controllers\Economia\CotizacionController;
 use App\Http\Controllers\Economia\EvaluacionEconomicaController;
 use App\Http\Controllers\Economia\DepreciacionController;
 use App\Http\Controllers\Economia\ImpuestosController;
+use App\Http\Controllers\Economia\ReemplazoController;
 
 Route::prefix('economia')->name('economia.')->group(function () {
 
@@ -24,6 +25,9 @@ Route::prefix('economia')->name('economia.')->group(function () {
 
     Route::get('/impuestos', [ImpuestosController::class, 'index'])
         ->name('impuestos');
+
+    Route::get('/reemplazo', [ReemplazoController::class, 'index'])
+        ->name('reemplazo');
 });
 
 Route::resource('alternativas', AlternativaController::class);
