@@ -23,7 +23,9 @@
                 'af' => 'Fondo de amortización (A/F)',
             ],
             'Tasas' => [
-                'efectiva' => 'Tasa efectiva anual',
+                'efectiva' => 'Tasa nominal a efectiva anual',
+                'nominal' => 'Tasa efectiva anual a nominal',
+                'equivalente' => 'Tasas efectivas equivalentes',
             ],
         ];
     @endphp
@@ -70,6 +72,51 @@
                        class="w-full rounded border border-fondo-300 px-3 py-2">
             </label>
 
+            <div id="camposConversion" class="hidden space-y-4">
+                @php
+                    $frecuencias = [
+                        1 => 'Anual',
+                        2 => 'Semestral',
+                        3 => 'Cuatrimestral',
+                        4 => 'Trimestral',
+                        6 => 'Bimestral',
+                        12 => 'Mensual',
+                        24 => 'Quincenal',
+                    ];
+                @endphp
+
+                <label class="block text-sm">
+                    <span class="mb-1 block text-slate-600">
+                        Período de origen
+                    </span>
+
+                    <select name="frecuencia_origen"
+                            class="w-full rounded border border-fondo-300 px-3 py-2">
+                        @foreach ($frecuencias as $valor => $nombre)
+                            <option value="{{ $valor }}"
+                                @selected(old('frecuencia_origen', $datos['frecuencia_origen'] ?? 1) == $valor)>
+                                {{ $nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </label>
+
+                <label class="block text-sm">
+                    <span class="mb-1 block text-slate-600">
+                        Período de destino
+                    </span>
+
+                    <select name="frecuencia_destino"
+                            class="w-full rounded border border-fondo-300 px-3 py-2">
+                        @foreach ($frecuencias as $valor => $nombre)
+                            <option value="{{ $valor }}"
+                                @selected(old('frecuencia_destino', $datos['frecuencia_destino'] ?? 12) == $valor)>
+                                {{ $nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </label>
+            </div>
             <div class="flex gap-3 pt-2">
                 <button type="submit" class="rounded-xl bg-petroleo-700 px-4 py-2 text-white hover:bg-petroleo-800">Calcular</button>
                 <a href="{{ route('economia.matematica') }}" class="rounded-xl bg-fondo-100 px-4 py-2 hover:bg-fondo-200">Limpiar</a>
@@ -83,7 +130,7 @@
                     <p class="text-sm uppercase tracking-wide text-slate-500">{{ $concepto }}</p>
                     <p class="mt-2 text-4xl font-bold text-slate-900">
                         @if ($unidad == '%')
-                            {{ number_format($resultado, 2) }} %
+                            {{ number_format($resultado, 4) }} %
                         @else
                             ${{ number_format($resultado, 2) }}
                         @endif
@@ -94,23 +141,71 @@
                         <p class="font-mono text-lg">{{ $formula }}</p>
                     </div>
 
+                                        
                     <div class="mt-4">
                         <p class="mb-2 text-sm text-slate-500">Datos usados</p>
+
                         <dl class="grid grid-cols-2 gap-y-1 text-sm sm:grid-cols-3">
-                            @if (($datos['operacion'] ?? '') !== 'efectiva')
+
+                            @if (!in_array($datos['operacion'], ['efectiva', 'nominal', 'equivalente']))
                                 <div>
                                     <dt class="text-slate-500">Monto</dt>
-                                    <dd class="font-medium">${{ number_format((float) ($datos['capital'] ?? 0), 2) }}</dd>
+                                    <dd class="font-medium">
+                                        ${{ number_format((float) ($datos['capital'] ?? 0), 2) }}
+                                    </dd>
                                 </div>
                             @endif
+
                             <div>
-                                <dt class="text-slate-500">{{ ($datos['operacion'] ?? '') === 'efectiva' ? 'Tasa nominal (j)' : 'Tasa (i)' }}</dt>
-                                <dd class="font-medium">{{ $datos['tasa'] ?? '' }} %</dd>
+                                <dt class="text-slate-500">
+                                    @switch($datos['operacion'])
+                                        @case('efectiva')
+                                            Tasa nominal anual
+                                            @break
+                                        @case('nominal')
+                                            Tasa efectiva anual
+                                            @break
+                                        @case('equivalente')
+                                            Tasa efectiva de origen
+                                            @break
+                                        @default
+                                            Tasa (i)
+                                    @endswitch
+                                </dt>
+
+                                <dd class="font-medium">
+                                    {{ $datos['tasa'] }} %
+                                </dd>
                             </div>
-                            <div>
-                                <dt class="text-slate-500">{{ ($datos['operacion'] ?? '') === 'efectiva' ? 'Capitalizaciones (m)' : 'Períodos (n)' }}</dt>
-                                <dd class="font-medium">{{ $datos['periodos'] ?? '' }}</dd>
-                            </div>
+
+                            @if ($datos['operacion'] === 'equivalente')
+                                <div>
+                                    <dt class="text-slate-500">Período de origen</dt>
+                                    <dd class="font-medium">
+                                        {{ $frecuencias[$datos['frecuencia_origen']] }}
+                                    </dd>
+                                </div>
+
+                                <div>
+                                    <dt class="text-slate-500">Período de destino</dt>
+                                    <dd class="font-medium">
+                                        {{ $frecuencias[$datos['frecuencia_destino']] }}
+                                    </dd>
+                                </div>
+                            @else
+                                <div>
+                                    <dt class="text-slate-500">
+                                        {{ in_array($datos['operacion'], ['efectiva', 'nominal'])
+                                            ? 'Capitalizaciones por año'
+                                            : 'Períodos (n)' }}
+                                    </dt>
+
+                                    <dd class="font-medium">
+                                        {{ $datos['periodos'] }}
+                                    </dd>
+                                </div>
+                            @endif
+
                         </dl>
                     </div>
                 </div>
@@ -123,9 +218,9 @@
     </div>
 @endsection
 
+
 @push('scripts')
     <script>
-        // Cambia las etiquetas según la operación elegida
         (function () {
             const operacion = document.getElementById('operacion');
 
@@ -142,17 +237,43 @@
 
             function actualizarCampos() {
                 const efectiva = operacion.value === 'efectiva';
+                const nominal = operacion.value === 'nominal';
+                const equivalente = operacion.value === 'equivalente';
 
-                document.getElementById('campoCapital').style.display = efectiva ? 'none' : 'block';
-                document.getElementById('capital').required = !efectiva;
+                const conversion = efectiva || nominal || equivalente;
 
-                document.getElementById('labelCapital').textContent = etiquetas[operacion.value] || 'Capital ($)';
-                document.getElementById('labelTasa').textContent = efectiva
-                    ? 'Tasa nominal anual (%)'
-                    : 'Tasa de interés por período (%)';
-                document.getElementById('labelPeriodos').textContent = efectiva
-                    ? 'Capitalizaciones por año'
-                    : 'Número de períodos';
+                document.getElementById('periodos').required = !equivalente;
+                document.getElementById('periodos').disabled = equivalente;
+
+                document.getElementById('capital').disabled = conversion;
+                document.getElementById('capital').required = !conversion;
+
+                document.getElementById('campoCapital').style.display =
+                    conversion ? 'none' : 'block';
+
+                document.getElementById('camposConversion').style.display =
+                    equivalente ? 'block' : 'none';
+
+                document.getElementById('periodos').closest('label').style.display =
+                    equivalente ? 'none' : 'block';
+
+                document.getElementById('labelCapital').textContent =
+                    etiquetas[operacion.value] || 'Capital ($)';
+
+                document.getElementById('labelTasa').textContent =
+                    efectiva ? 'Tasa nominal anual (%)' :
+                    nominal ? 'Tasa efectiva anual (%)' :
+                    equivalente ? 'Tasa efectiva de origen (%)' :
+                    'Tasa de interés por período (%)';
+
+                document.getElementById('labelPeriodos').textContent =
+                    conversion ? 'Capitalizaciones por año' :
+                    'Número de períodos';
+
+                document.querySelectorAll('#camposConversion select').forEach(campo => {
+                    campo.disabled = !equivalente;
+                    campo.required = equivalente;
+                });
             }
 
             operacion.addEventListener('change', actualizarCampos);

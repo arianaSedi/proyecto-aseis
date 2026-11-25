@@ -14,11 +14,21 @@ class MatematicaFinancieraController extends Controller
 
     public function calcular(Request $request)
     {
+        $esConversion = in_array($request->operacion, [
+            'efectiva', 'nominal', 'equivalente'
+        ]);
+
         $request->validate([
-            'operacion' => 'required|in:simple,compuesto,presente,futuro,efectiva,pa,fa,ap,af',
-            'capital' => 'required|numeric|min:0',
+            'operacion' => 'required|in:simple,compuesto,presente,futuro,efectiva,pa,fa,ap,af,nominal,equivalente',
+            'capital' => $esConversion
+                ? 'nullable|numeric|min:0'
+                : 'required|numeric|min:0',
             'tasa' => 'required|numeric|min:0|max:1000',
-            'periodos' => 'required|integer|min:1|max:1000',
+            'periodos' => $request->operacion === 'equivalente'
+                ? 'nullable|integer|min:1|max:1000'
+                : 'required|integer|min:1|max:1000',
+            'frecuencia_origen' => 'required_if:operacion,equivalente|nullable|in:1,2,3,4,6,12,24',
+            'frecuencia_destino' => 'required_if:operacion,equivalente|nullable|in:1,2,3,4,6,12,24',
         ]);
 
         $capital = (float) $request->capital;
@@ -60,6 +70,24 @@ class MatematicaFinancieraController extends Controller
                 $resultado = (pow(1 + $tasa / $n, $n) - 1) * 100;
                 $formula = 'TEA = (1 + j/m)^m - 1';
                 $concepto = 'Tasa efectiva anual';
+                $unidad = '%';
+                break;
+
+            case 'nominal':
+                $resultado = $n * (pow(1 + $tasa, 1 / $n) - 1) * 100;
+                $formula = 'j = m × [(1 + TEA)^(1/m) - 1]';
+                $concepto = 'Tasa nominal anual';
+                $unidad = '%';
+                break;
+
+            case 'equivalente':
+                $origen = (int) $request->frecuencia_origen;
+                $destino = (int) $request->frecuencia_destino;
+
+                $resultado = (pow(1 + $tasa, $origen / $destino) - 1) * 100;
+
+                $formula = 'i2 = (1 + i1)^(m1/m2) - 1';
+                $concepto = 'Tasa efectiva equivalente';
                 $unidad = '%';
                 break;
 
